@@ -1049,7 +1049,7 @@ function switchView(view) {
   if (view === 'log') renderLog();
   if (view === 'riwayat') renderRiwayat();
   if (view === 'pengguna') renderPengguna();
-  if (view === 'kasir') { updateStat(); }
+  if (view === 'kasir') { renderMenu(); updateStat(); }
 }
 
 /* ================= KASIR / POS ================= */
@@ -1214,6 +1214,7 @@ function prosesBayar() {
   $('tunai').value = '';
   $('diskon').value = '0';
   renderCart();
+  renderMenu();
   renderRiwayat();
   renderStok();
   renderLogStok();
