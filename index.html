@@ -134,6 +134,15 @@
   .badge-warn    { background: rgba(245,196,0,.16); color: #a8870a; }
   .badge-muted   { background: rgba(134,134,136,.15); color: var(--muted); }
 
+  .color-row { display: flex; align-items: center; gap: 10px; }
+  .color-row input[type="color"] {
+    width: 46px; height: 34px; padding: 2px; border: 1px solid var(--border);
+    border-radius: 6px; background: #fff; cursor: pointer;
+  }
+  .color-swatch { width: 26px; height: 26px; border-radius: 50%; border: 1px solid #0000001a; flex-shrink: 0; }
+  .color-hex { font-size: 12.5px; color: var(--muted); font-family: monospace; }
+  .swatch-tabel { width: 22px; height: 22px; border-radius: 6px; border: 1px solid #0000001a; display: inline-block; vertical-align: middle; }
+
   /* ===== STAT CARDS ===== */
   .stat-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
   .stat-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
@@ -193,14 +202,19 @@
     cursor: pointer; font-size: 14px; line-height: 1; color: #5a5a5c; display: grid; place-items: center;
   }
   .qty-ctrl button:hover { border-color: var(--primary); color: var(--primary); }
-  .qty-ctrl b { min-width: 16px; text-align: center; font-size: 13px; }
+  .qty-input {
+    width: 46px; height: 24px; border: 1px solid var(--border); border-radius: 6px; background: #fff;
+    text-align: center; font-size: 13px; font-weight: 600; color: var(--text); outline: none;
+    -moz-appearance: textfield; appearance: textfield;
+  }
+  .qty-input:focus { border-color: var(--primary); }
+  .qty-input::-webkit-outer-spin-button, .qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   .cart-item .subtotal { width: 82px; text-align: right; font-weight: 600; font-size: 13px; }
   .cart-item .hapus { border: none; background: none; color: var(--danger); cursor: pointer; font-size: 14px; padding: 2px; }
   .kosong { color: var(--muted); text-align: center; padding: 28px 0; font-size: 13px; }
 
   .ringkasan { border-top: 1px solid var(--border); padding: 12px 16px 16px; background: #fdfdfd; }
   .ringkasan .baris { display: flex; justify-content: space-between; align-items: center; margin: 5px 0; font-size: 13.5px; }
-  .ringkasan .baris select { border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; font-size: 13px; }
   .ringkasan .baris input {
     width: 130px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px;
     font-size: 13.5px; text-align: right; outline: none;
@@ -254,6 +268,22 @@
   .bar-val { width: 92px; font-weight: 600; font-size: 12px; flex-shrink: 0; }
   .total-row td { font-weight: 700; background: #fbfbfb; }
 
+  /* ===== KEUANGAN / OPNAME / JURNAL ===== */
+  .kan { text-align: right; }
+  .sub-note { font-size: 12.5px; color: var(--muted); margin-top: 12px; line-height: 1.65; }
+  .sub-note b { color: #5a5a5c; }
+  .selisih-neg { color: var(--danger); font-weight: 600; }
+  .selisih-pos { color: #2ba049; font-weight: 600; }
+  .akun-kode { font-size: 12.5px; color: var(--muted); }
+  .opname-input {
+    width: 94px; border: 1px solid var(--border); border-radius: 6px; padding: 7px 9px;
+    font-size: 13.5px; outline: none; text-align: center; background: #fff;
+  }
+  .opname-input:focus { border-color: var(--primary); }
+  .opname-input.ada-selisih { border-color: var(--warning); background: #fffdf3; }
+  .modal-card.lebar { width: 780px; }
+  .baris-akun-sub td:first-child { padding-left: 34px; color: #5a5a5c; }
+
   /* ===== MODAL ===== */
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none; place-items: center; z-index: 300; }
   .modal-overlay.buka { display: grid; }
@@ -281,12 +311,19 @@
   #laporanPrint table { width: 100%; border-collapse: collapse; margin-top: 10px; }
   #laporanPrint th, #laporanPrint td { border: 1px solid #ccc; padding: 5px 8px; text-align: left; }
   #laporanPrint .kanan { text-align: right; }
+  #laporanPrint h3 { font-size: 13px; margin: 16px 0 0; text-transform: uppercase; letter-spacing: .4px; }
+  #laporanPrint .total td { font-weight: 700; background: #f2f2f2; }
+  #laporanPrint .ket { font-size: 11px; color: #555; margin-top: 14px; }
+  #laporanPrint table { page-break-inside: auto; }
+  #laporanPrint tr { page-break-inside: avoid; }
 
   @media print {
     body * { visibility: hidden; }
     #strukArea, #strukArea *, #laporanPrint, #laporanPrint * { visibility: visible; }
     #strukArea { display: block !important; position: absolute; left: 0; top: 0; margin: 0; border: none; }
     #laporanPrint { display: block !important; position: absolute; left: 0; top: 0; width: 100%; margin: 0; }
+    body.cetak-laporan #strukArea { display: none !important; }
+    body.cetak-struk #laporanPrint { display: none !important; }
   }
 
   @media (min-width: 769px) {
@@ -360,14 +397,30 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
       Daftar Produk
     </a>
+    <a class="menu-link" id="linkKategori" onclick="switchView('kategori')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></svg>
+      Kelola Kategori
+    </a>
     <a class="menu-link" id="linkStok" onclick="switchView('stok')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 8.35V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.35A2 2 0 0 1 3.26 6.5l8-3.2a2 2 0 0 1 1.48 0l8 3.2A2 2 0 0 1 22 8.35Z"/><path d="M6 18h12"/><path d="M6 14h12"/><path d="M6 10h12"/></svg>
       Stok Produk
+    </a>
+    <a class="menu-link" id="linkOpname" onclick="switchView('opname')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
+      Stock Opname
     </a>
     <div class="menu-label" data-grup="laporan">LAPORAN</div>
     <a class="menu-link" id="linkLaporan" onclick="switchView('laporan')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M7 16v-5"/><path d="M12 16V8"/><path d="M17 16v-3"/></svg>
       Laporan Penjualan
+    </a>
+    <a class="menu-link" id="linkKeuangan" onclick="switchView('keuangan')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>
+      Laporan Keuangan
+    </a>
+    <a class="menu-link" id="linkJurnal" onclick="switchView('jurnal')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
+      Jurnal Akuntansi
     </a>
     <a class="menu-link" id="linkLog" onclick="switchView('log')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>
@@ -491,13 +544,8 @@
         <div class="ringkasan">
           <div class="baris"><span>Subtotal</span><span id="subtotal">Rp 0</span></div>
           <div class="baris">
-            <span>Diskon</span>
-            <select id="diskon" onchange="renderCart()">
-              <option value="0">0%</option>
-              <option value="5">5%</option>
-              <option value="10">10%</option>
-              <option value="15">15%</option>
-            </select>
+            <span>Diskon (%)</span>
+            <input type="number" id="diskon" min="0" max="100" step="1" value="0" oninput="renderCart()">
           </div>
           <div class="baris"><span>PPN (<span id="ppnLabel">10</span>%)</span><span id="pajak">Rp 0</span></div>
           <div class="baris total"><span>TOTAL</span><span id="total">Rp 0</span></div>
@@ -536,6 +584,31 @@
     </div>
   </section>
 
+  <!-- VIEW: KATEGORI -->
+  <section id="viewKategori" style="display:none">
+    <div class="page-head">
+      <h1>Kelola Kategori</h1>
+      <button class="btn btn-primary" onclick="bukaModalKategori()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+        Tambah Kategori
+      </button>
+    </div>
+    <div class="card table-card" style="margin-top:0">
+      <div class="table-head">
+        <h2>Semua Kategori</h2>
+        <span style="font-size:12.5px;color:var(--muted)">Ganti nama kategori akan mengubah semua produk di dalamnya</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr><th style="width:60px">Warna</th><th>Nama Kategori</th><th>Jumlah Produk</th><th style="text-align:right">Aksi</th></tr>
+          </thead>
+          <tbody id="kategoriBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
   <!-- VIEW: STOK -->
   <section id="viewStok" style="display:none">
     <div class="page-head">
@@ -563,6 +636,65 @@
             <tr><th>Waktu</th><th>Produk</th><th>Perubahan</th><th>Stok Akhir</th><th>Keterangan</th><th>Oleh</th></tr>
           </thead>
           <tbody id="stokLogBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEW: STOCK OPNAME -->
+  <section id="viewOpname" style="display:none">
+    <div class="page-head">
+      <h1>Stock Opname</h1>
+      <button class="btn btn-primary" onclick="simpanOpname()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        Simpan Opname
+      </button>
+    </div>
+    <div class="stat-cards" id="opnameStat"></div>
+    <div class="card table-card" style="margin-top:0">
+      <div class="table-head">
+        <h2>Hitung Fisik Stok</h2>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <input type="text" class="search-input" placeholder="Cari produk..." oninput="cariOpname(this.value)">
+          <button class="btn btn-outline btn-xs" id="btnOpnameSemua" onclick="setOpnameFilter('semua')">Semua</button>
+          <button class="btn btn-outline btn-xs" id="btnOpnameSelisih" onclick="setOpnameFilter('selisih')">Selisih saja</button>
+          <button class="btn btn-outline btn-xs" onclick="isiSemuaFisik()">Isi = Stok Sistem</button>
+          <button class="btn btn-danger-outline btn-xs" onclick="resetOpnameDraft()">Reset Isian</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr><th>Produk</th><th>Kategori</th><th class="kan">Stok Sistem</th><th style="width:130px">Stok Fisik</th><th class="kan">Selisih</th><th class="kan">Nilai Selisih</th></tr>
+          </thead>
+          <tbody id="opnameBody"></tbody>
+        </table>
+      </div>
+      <div class="table-foot">
+        <span id="opnameFootInfo">0 produk</span>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <label style="font-size:13px;color:var(--muted)">Catatan opname</label>
+          <input type="text" id="opnameCatatan" class="search-input" style="width:250px" placeholder="Contoh: opname tutup bulan">
+        </div>
+      </div>
+      <div style="padding:0 16px 14px">
+        <div class="sub-note" style="margin-top:0">
+          Isi <b>Stok Fisik</b> sesuai hasil hitung nyata. Saat disimpan, stok sistem otomatis disamakan, selisih dicatat di <b>Riwayat Perubahan Stok</b> dan <b>Log Aktivitas</b>, serta dibuatkan <b>jurnal penyesuaian persediaan</b>.<br>
+          Nilai selisih dihitung dari <b>Harga Modal</b> produk; bila harga modal belum diisi, dipakai <b>Harga Jual</b>.
+        </div>
+      </div>
+    </div>
+    <div class="card table-card">
+      <div class="table-head">
+        <h2>Riwayat Opname</h2>
+        <span style="font-size:12.5px;color:var(--muted)">Dokumen opname yang pernah disimpan</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr><th>No. Opname</th><th>Waktu</th><th>Oleh</th><th class="kan">Produk Selisih</th><th class="kan">Selisih Kurang</th><th class="kan">Selisih Lebih</th><th>Catatan</th><th style="text-align:right">Aksi</th></tr>
+          </thead>
+          <tbody id="opnameRiwayatBody"></tbody>
         </table>
       </div>
     </div>
@@ -596,6 +728,115 @@
       <div class="card" style="padding:16px">
         <h2 style="font-size:16px;margin-bottom:10px">Grafik</h2>
         <div id="laporanGrafik"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEW: KEUANGAN -->
+  <section id="viewKeuangan" style="display:none">
+    <div class="page-head">
+      <h1>Laporan Keuangan</h1>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-outline" onclick="unduhExcelKeuangan()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+          Unduh Excel
+        </button>
+        <button class="btn btn-primary" onclick="unduhPdfKeuangan()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Unduh PDF
+        </button>
+      </div>
+    </div>
+    <div class="card" style="padding:16px;margin-bottom:16px">
+      <div class="kategori-pills" id="keuanganTabs" style="margin-bottom:0"></div>
+      <div class="laporan-kontrol" id="keuanganKontrol"></div>
+      <div class="sub-note">
+        Angka dihitung langsung dari transaksi tersimpan, jadi selalu <b>real time</b> (setiap pembayaran langsung masuk laporan).<br>
+        <b>Unduh PDF</b> membuka dialog cetak browser &mdash; pilih tujuan <b>"Save as PDF"</b>. <b>Unduh Excel</b> menyimpan berkas <b>.xls</b> berisi 3 sheet: Ringkasan, Per Item, Per Kategori.
+      </div>
+    </div>
+    <div class="periode-info" id="keuanganPeriode"></div>
+    <div class="stat-cards" id="keuanganStat"></div>
+    <div class="card table-card" style="margin-top:0">
+      <div class="table-head">
+        <h2>Keuangan per Item Barang</h2>
+        <span style="font-size:12.5px;color:var(--muted)" id="keuanganItemNote">Diskon dialokasikan proporsional ke tiap item</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead id="keuanganItemThead"></thead>
+          <tbody id="keuanganItemBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card table-card">
+      <div class="table-head">
+        <h2>Keuangan per Kategori</h2>
+        <span style="font-size:12.5px;color:var(--muted)">Rekap penjualan menurut kategori produk</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead id="keuanganKategoriThead"></thead>
+          <tbody id="keuanganKategoriBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEW: JURNAL -->
+  <section id="viewJurnal" style="display:none">
+    <div class="page-head">
+      <h1>Jurnal Akuntansi</h1>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-outline" onclick="unduhExcelJurnal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+          Unduh Excel
+        </button>
+        <button class="btn btn-primary" onclick="unduhPdfJurnal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Unduh PDF
+        </button>
+      </div>
+    </div>
+    <div class="card" style="padding:16px;margin-bottom:16px">
+      <div class="kategori-pills" id="jurnalTabs" style="margin-bottom:0"></div>
+      <div class="laporan-kontrol" id="jurnalKontrol"></div>
+      <div class="sub-note">
+        Jurnal dibuat otomatis (double entry) dari <b>transaksi penjualan</b> &mdash; Kas, Diskon Penjualan, Pendapatan Penjualan, PPN Keluaran, Beban Pokok Penjualan &mdash; dan dari <b>hasil stock opname</b> (selisih persediaan).<br>
+        <b>Unduh PDF</b> membuka dialog cetak browser &mdash; pilih tujuan <b>"Save as PDF"</b>. <b>Unduh Excel</b> menyimpan berkas <b>.xls</b> berisi sheet Jurnal Umum dan Neraca Saldo.
+      </div>
+    </div>
+    <div class="periode-info" id="jurnalPeriode"></div>
+    <div class="card table-card" style="margin-top:0">
+      <div class="table-head">
+        <h2>Jurnal Umum</h2>
+        <input type="text" class="search-input" placeholder="Cari no. bukti / akun / keterangan..." oninput="cariJurnal(this.value)">
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr><th>Tanggal</th><th>No. Bukti</th><th>Keterangan</th><th>Akun</th><th class="kan">Debet</th><th class="kan">Kredit</th></tr>
+          </thead>
+          <tbody id="jurnalBody"></tbody>
+        </table>
+      </div>
+      <div class="table-foot">
+        <span id="jurnalFootInfo">0 entri</span>
+        <span id="jurnalBalance"></span>
+      </div>
+    </div>
+    <div class="card table-card">
+      <div class="table-head">
+        <h2>Neraca Saldo</h2>
+        <span style="font-size:12.5px;color:var(--muted)">Rekap saldo debet &amp; kredit tiap akun pada periode terpilih</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr><th style="width:90px">Kode</th><th>Nama Akun</th><th class="kan">Debet</th><th class="kan">Kredit</th></tr>
+          </thead>
+          <tbody id="neracaBody"></tbody>
+        </table>
       </div>
     </div>
   </section>
@@ -697,6 +938,11 @@
         <input type="number" id="setHargaProduk" min="0" placeholder="Contoh: 10000">
       </div>
       <div class="form-grup">
+        <label>Harga Modal / HPP per unit (opsional)</label>
+        <input type="number" id="setModalProduk" min="0" placeholder="Contoh: 3000">
+        <div class="sub-note" style="margin-top:6px">Dipakai untuk laba kotor di Laporan Keuangan, jurnal HPP, dan nilai selisih stock opname.</div>
+      </div>
+      <div class="form-grup">
         <label>Kategori</label>
         <input type="text" id="setKategoriProduk" list="daftarKategori" placeholder="Contoh: Kopi">
         <datalist id="daftarKategori"></datalist>
@@ -714,6 +960,76 @@
     <div class="modal-foot">
       <button class="btn btn-outline" onclick="tutupModalProduk()">Batal</button>
       <button class="btn btn-primary" onclick="simpanProduk()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL KATEGORI ===== -->
+<div class="modal-overlay" id="modalKategori">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3 id="judulModalKategori">Tambah Kategori</h3>
+      <button class="icon-btn" onclick="tutupModalKategori()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grup">
+        <label>Nama Kategori</label>
+        <input type="text" id="setNamaKategori" placeholder="Contoh: Kopi" oninput="pratinjauWarnaKategori()">
+      </div>
+      <div class="form-grup">
+        <label>Warna</label>
+        <div class="color-row">
+          <input type="color" id="setWarnaKategori" value="#ff762d" oninput="pratinjauWarnaKategori()">
+          <span class="color-swatch" id="pratinjauKategori"></span>
+          <span class="color-hex" id="pratinjauKategoriHex">#ff762d</span>
+        </div>
+        <div class="form-info" style="margin-top:8px">Warna ini dipakai untuk ikon produk tanpa gambar dan penanda kategori.</div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="tutupModalKategori()">Batal</button>
+      <button class="btn btn-primary" onclick="simpanKategoriForm()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL HAPUS KATEGORI ===== -->
+<div class="modal-overlay" id="modalHapusKategori">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>Hapus Kategori</h3>
+      <button class="icon-btn" onclick="tutupHapusKategori()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-info" id="infoHapusKategori">-</div>
+      <div class="form-grup" id="grupPindahKategori">
+        <label>Pindahkan produk ke kategori</label>
+        <select id="setTujuanKategori"></select>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="tutupHapusKategori()">Batal</button>
+      <button class="btn btn-danger-outline" onclick="konfirmasiHapusKategori()">Hapus Kategori</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL DETAIL OPNAME ===== -->
+<div class="modal-overlay" id="modalOpname">
+  <div class="modal-card lebar">
+    <div class="modal-head">
+      <h3 id="judulModalOpname">Detail Opname</h3>
+      <button class="icon-btn" onclick="tutupModalOpname()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="isiModalOpname"></div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="tutupModalOpname()">Tutup</button>
     </div>
   </div>
 </div>
@@ -861,10 +1177,18 @@
 const formatRupiah = n => 'Rp ' + n.toLocaleString('id-ID');
 const $ = id => document.getElementById(id);
 const pad = n => String(n).padStart(2, '0');
+const escJs = s => String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+const escHtml = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 function tanggalInput(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
 function bulanInput(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1); }
 function fmtTanggalLaporan(d) { return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }); }
 function statusOf(t) { return t.status || 'lunas'; }
+const formatAngka = n => Math.round(n || 0).toLocaleString('id-ID');
+function cetakSekarang(mode) {
+  document.body.classList.add(mode === 'struk' ? 'cetak-struk' : 'cetak-laporan');
+  window.print();
+  document.body.classList.remove('cetak-struk', 'cetak-laporan');
+}
 
 /* ================= KONSTANTA ================= */
 const DEFAULT_PRODUK = [
@@ -892,14 +1216,29 @@ const STOK_MENIPIS = 10;
 const VIEW_CFG = {
   kasir:    { grup: 'MAIN',     judul: 'Kasir / POS' },
   produk:   { grup: 'MAIN',     judul: 'Daftar Produk' },
+  kategori: { grup: 'MAIN',     judul: 'Kelola Kategori' },
   stok:     { grup: 'MAIN',     judul: 'Stok Produk' },
+  opname:   { grup: 'MAIN',     judul: 'Stock Opname' },
   laporan:  { grup: 'LAPORAN',  judul: 'Laporan Penjualan' },
+  keuangan: { grup: 'LAPORAN',  judul: 'Laporan Keuangan' },
+  jurnal:   { grup: 'LAPORAN',  judul: 'Jurnal Akuntansi' },
   log:      { grup: 'LAPORAN',  judul: 'Log Aktivitas' },
   riwayat:  { grup: 'LAPORAN',  judul: 'Riwayat Transaksi' },
   pengguna: { grup: 'SISTEM',   judul: 'User Management' },
 };
-const VIEWS_ADMIN = ['kasir', 'produk', 'stok', 'laporan', 'log', 'riwayat', 'pengguna'];
-const MENU_ADMIN = ['linkProduk', 'linkStok', 'linkLaporan', 'linkLog', 'linkRiwayat', 'linkPengguna', 'linkPengaturan', 'linkCetak'];
+const VIEWS_ADMIN = ['kasir', 'produk', 'kategori', 'stok', 'opname', 'laporan', 'keuangan', 'jurnal', 'log', 'riwayat', 'pengguna'];
+const MENU_ADMIN = ['linkProduk', 'linkKategori', 'linkStok', 'linkOpname', 'linkLaporan', 'linkKeuangan', 'linkJurnal', 'linkLog', 'linkRiwayat', 'linkPengguna', 'linkPengaturan', 'linkCetak'];
+const PERIODE_LABEL = { realtime: 'Real-time', mingguan: 'Mingguan', bulanan: 'Bulanan', tahunan: 'Tahunan' };
+const AKUN = {
+  kas:        { kode: '1-100', nama: 'Kas' },
+  persediaan: { kode: '1-120', nama: 'Persediaan Barang Dagang' },
+  ppn:        { kode: '2-150', nama: 'PPN Keluaran' },
+  pendapatan: { kode: '4-100', nama: 'Pendapatan Penjualan' },
+  diskon:     { kode: '4-110', nama: 'Diskon Penjualan' },
+  untungStok: { kode: '4-200', nama: 'Keuntungan Selisih Persediaan' },
+  hpp:        { kode: '5-100', nama: 'Beban Pokok Penjualan' },
+  rugiStok:   { kode: '5-200', nama: 'Kerugian Selisih Persediaan' }
+};
 
 /* ================= STATE ================= */
 let produk = JSON.parse(localStorage.getItem('produkMinuman') || 'null') || DEFAULT_PRODUK.map(p => ({ ...p }));
@@ -909,6 +1248,8 @@ let riwayatStok = JSON.parse(localStorage.getItem('riwayatStok') || '[]');
 let riwayat = JSON.parse(localStorage.getItem('riwayatTransaksi') || '[]');
 let logAktivitas = JSON.parse(localStorage.getItem('logAktivitas') || '[]');
 let logSeenTs = parseInt(localStorage.getItem('logAktivitasSeen') || '0');
+let kategoriData = JSON.parse(localStorage.getItem('kategoriPOS') || 'null') ||
+  Object.keys(WARNA_KATEGORI).map(nama => ({ nama, warna: WARNA_KATEGORI[nama] }));
 let pengaturan = JSON.parse(localStorage.getItem('pengaturanToko') || '{"namaToko":"Kasir Minuman","ppn":10}');
 let nomorTrx = parseInt(localStorage.getItem('nomorTransaksi') || '1000');
 let sesi = JSON.parse(sessionStorage.getItem('sesiPOS') || 'null');
@@ -932,17 +1273,46 @@ let laporanKasir = 'semua';
 let stokTipe = 'masuk';
 let stokProdukId = null;
 let penggunaEditId = null;
+let kategoriEditIdx = null;
+let kategoriHapusIdx = null;
+let opnameData = JSON.parse(localStorage.getItem('opnamePOS') || '[]');
+let opnameDraft = {};
+let opnameKunci = '';
+let opnameFilter = 'semua';
+let keuMode = 'realtime';
+let keuTgl = tanggalInput(new Date());
+let keuBln = bulanInput(new Date());
+let keuThn = new Date().getFullYear();
+let jurMode = 'realtime';
+let jurTgl = tanggalInput(new Date());
+let jurBln = bulanInput(new Date());
+let jurThn = new Date().getFullYear();
+let kunciJurnal = '';
 
 function saveProduk() { localStorage.setItem('produkMinuman', JSON.stringify(produk)); }
 function savePengguna() { localStorage.setItem('penggunaPOS', JSON.stringify(pengguna)); }
 function saveRiwayat() { localStorage.setItem('riwayatTransaksi', JSON.stringify(riwayat.slice(0, 100))); }
 function saveLogStok() { localStorage.setItem('riwayatStok', JSON.stringify(riwayatStok.slice(0, 200))); }
 function saveLogAktivitas() { localStorage.setItem('logAktivitas', JSON.stringify(logAktivitas.slice(0, 200))); }
+function saveKategori() { localStorage.setItem('kategoriPOS', JSON.stringify(kategoriData)); }
+function saveOpname() { localStorage.setItem('opnamePOS', JSON.stringify(opnameData.slice(0, 50))); }
+function sinkronKategori() {
+  let berubah = false;
+  produk.forEach(p => {
+    if (p.kategori && !kategoriData.some(k => k.nama === p.kategori)) {
+      kategoriData.push({ nama: p.kategori, warna: '' });
+      berubah = true;
+    }
+  });
+  if (berubah) saveKategori();
+}
 
 function warnaKategori(k) {
-  if (WARNA_KATEGORI[k]) return WARNA_KATEGORI[k];
+  const key = String(k || '').toLowerCase();
+  const ket = kategoriData.find(x => x.nama.toLowerCase() === key);
+  if (ket && ket.warna) return ket.warna;
   let h = 0;
-  for (const c of k) h = (h * 31 + c.charCodeAt(0)) % 360;
+  for (const c of String(k || '')) h = (h * 31 + c.charCodeAt(0)) % 360;
   return 'hsl(' + h + ',55%,45%)';
 }
 function ikonProduk(m, cls) {
@@ -1007,9 +1377,11 @@ function mulaiAplikasi() {
   updateBellBadge();
 }
 function renderSemua() {
+  sinkronKategori();
   renderPills(); renderMenu(); renderCart(); renderRiwayat();
-  renderProdukAdmin(); renderStok(); renderLogStok(); renderLog();
+  renderProdukAdmin(); renderKategori(); renderStok(); renderLogStok(); renderLog();
   renderPengguna(); renderLaporan(); updateStat(); updateBellBadge();
+  renderOpname(); renderKeuangan(); renderJurnal();
 }
 
 /* ================= NAVIGASI ================= */
@@ -1044,8 +1416,12 @@ function switchView(view) {
   const cfg = VIEW_CFG[view];
   $('breadcrumb').innerHTML = cfg.grup + ' <span>&nbsp;/&nbsp;</span> <b>' + cfg.judul + '</b>';
   if (view === 'produk') renderProdukAdmin();
+  if (view === 'kategori') renderKategori();
   if (view === 'stok') { renderStok(); renderLogStok(); }
+  if (view === 'opname') renderOpname();
   if (view === 'laporan') renderLaporan();
+  if (view === 'keuangan') renderKeuangan();
+  if (view === 'jurnal') renderJurnal();
   if (view === 'log') renderLog();
   if (view === 'riwayat') renderRiwayat();
   if (view === 'pengguna') renderPengguna();
@@ -1054,10 +1430,10 @@ function switchView(view) {
 
 /* ================= KASIR / POS ================= */
 function renderPills() {
-  const kategori = ['Semua', ...new Set(produk.map(m => m.kategori))];
-  if (kategoriAktif !== 'Semua' && !kategori.includes(kategoriAktif)) kategoriAktif = 'Semua';
-  $('pills').innerHTML = kategori.map(k =>
-    '<button class="pill ' + (k === kategoriAktif ? 'active' : '') + '" onclick="pilihKategori(\'' + k + '\')">' + k + '</button>'
+  const semua = ['Semua', ...new Set([...kategoriData.map(k => k.nama), ...produk.map(m => m.kategori)])];
+  if (kategoriAktif !== 'Semua' && !semua.includes(kategoriAktif)) kategoriAktif = 'Semua';
+  $('pills').innerHTML = semua.map(k =>
+    '<button class="pill ' + (k === kategoriAktif ? 'active' : '') + '" onclick="pilihKategori(\'' + escHtml(escJs(k)) + '\')">' + escHtml(k) + '</button>'
   ).join('');
 }
 function pilihKategori(k) { kategoriAktif = k; renderPills(); renderMenu(); }
@@ -1122,10 +1498,34 @@ function hapusItem(id) {
   renderCart();
 }
 
+function setQty(id, nilai) {
+  const item = keranjang.find(i => i.id === id);
+  if (!item) return;
+  const p = produk.find(m => m.id === id);
+  const maks = p ? p.stok : 999;
+  const sebelum = item.qty;
+  let q = parseInt(nilai, 10);
+
+  if (!isNaN(q) && q > maks) {
+    alert('Stok "' + item.nama + '" tidak mencukupi (sisa ' + maks + '). Jumlah disesuaikan.');
+    q = maks;
+  }
+  if (isNaN(q) || q <= 0) {
+    keranjang = keranjang.filter(i => i.id !== id);
+    catatLog('Hapus item', item.nama + ' x' + sebelum + ' dikeluarkan dari pesanan sebelum bayar');
+    renderCart();
+    return;
+  }
+  if (q === sebelum) { renderCart(); return; }
+  item.qty = q;
+  if (q < sebelum) catatLog('Kurangi jumlah', item.nama + ' x' + sebelum + ' &rarr; x' + q);
+  renderCart();
+}
+
 function hitungTotal() {
   const subtotal = keranjang.reduce((s, i) => s + i.harga * i.qty, 0);
-  const diskonPersen = parseInt($('diskon').value);
-  const setelahDiskon = subtotal * (1 - diskonPersen / 100);
+  const diskonPersen = Math.max(0, Math.min(100, parseFloat($('diskon').value) || 0));
+  const setelahDiskon = Math.round(subtotal * (1 - diskonPersen / 100));
   const pajak = Math.round(setelahDiskon * pengaturan.ppn / 100);
   return { subtotal, diskonPersen, setelahDiskon, pajak, total: setelahDiskon + pajak };
 }
@@ -1135,18 +1535,24 @@ function renderCart() {
   if (keranjang.length === 0) {
     el.innerHTML = '<div class="kosong">Belum ada item.<br>Klik produk untuk menambah.</div>';
   } else {
-    el.innerHTML = keranjang.map(i => `
+    el.innerHTML = keranjang.map(i => {
+      const p = produk.find(m => m.id === i.id);
+      const maks = p ? p.stok : i.qty;
+      return `
       <div class="cart-item">
         ${i.gambar ? '<img class="cart-thumb" src="' + i.gambar + '" alt="">' : ''}
         <span class="nama">${i.nama}<small>${formatRupiah(i.harga)}</small></span>
         <span class="qty-ctrl">
-          <button onclick="ubahQty(${i.id}, -1)">&minus;</button>
-          <b>${i.qty}</b>
-          <button onclick="ubahQty(${i.id}, 1)">+</button>
+          <button onclick="ubahQty(${i.id}, -1)" title="Kurangi">&minus;</button>
+          <input type="number" class="qty-input" value="${i.qty}" min="1" max="${maks}"
+            onchange="setQty(${i.id}, this.value)" onkeydown="if(event.key==='Enter')this.blur()"
+            title="Ketik jumlah (maks ${maks})" aria-label="Jumlah ${i.nama}">
+          <button onclick="ubahQty(${i.id}, 1)" title="Tambah">+</button>
         </span>
         <span class="subtotal">${formatRupiah(i.harga * i.qty)}</span>
         <button class="hapus" onclick="hapusItem(${i.id})" title="Hapus">&#10005;</button>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   }
   const { subtotal, pajak, total } = hitungTotal();
   $('subtotal').textContent = formatRupiah(subtotal);
@@ -1208,7 +1614,7 @@ function prosesBayar() {
 
   strukTerakhir = transaksi;
   buatStruk(transaksi);
-  window.print();
+  cetakSekarang('struk');
 
   keranjang = [];
   $('tunai').value = '';
@@ -1221,6 +1627,8 @@ function prosesBayar() {
   renderLog();
   updateStat();
   renderLaporan();
+  renderKeuangan();
+  renderJurnal();
 }
 
 function buatStruk(t) {
@@ -1244,7 +1652,7 @@ function buatStruk(t) {
 function cetakStruk() {
   if (!strukTerakhir) { alert('Belum ada transaksi pada sesi ini.'); return; }
   buatStruk(strukTerakhir);
-  window.print();
+  cetakSekarang('struk');
 }
 function resetPesanan() {
   if (keranjang.length) catatLog('Reset pesanan', keranjang.map(i => i.nama + ' x' + i.qty).join(', ') + ' dibatalkan sebelum bayar');
@@ -1270,6 +1678,7 @@ function badgeLog(aksi) {
   if (aksi === 'Reset pesanan') return '<span class="badge badge-danger">Reset pesanan</span>';
   if (aksi === 'Pembayaran') return '<span class="badge badge-success">Pembayaran</span>';
   if (aksi === 'Ubah profil') return '<span class="badge badge-info">Ubah profil</span>';
+  if (aksi === 'Stock opname') return '<span class="badge badge-info">Stock opname</span>';
   return '<span class="badge badge-muted">' + aksi + '</span>';
 }
 
@@ -1313,6 +1722,106 @@ function bersihkanLog() {
   updateBellBadge();
 }
 
+/* ================= KATEGORI ================= */
+function toHex(w) { return /^#[0-9a-fA-F]{6}$/.test(w || '') ? w : '#ff762d'; }
+function jumlahProdukKategori(nama) { return produk.filter(p => p.kategori === nama).length; }
+
+function refreshKategoriTerkait() {
+  renderKategori(); renderPills(); renderMenu(); renderProdukAdmin();
+}
+
+function renderKategori() {
+  sinkronKategori();
+  $('kategoriBody').innerHTML = kategoriData.length === 0
+    ? '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px">Belum ada kategori.</td></tr>'
+    : kategoriData.map((k, idx) => `
+      <tr>
+        <td><span class="swatch-tabel" style="background:${warnaKategori(k.nama)}"></span></td>
+        <td style="font-weight:500">${escHtml(k.nama)}</td>
+        <td>${jumlahProdukKategori(k.nama)} produk</td>
+        <td style="text-align:right;white-space:nowrap">
+          <button class="btn btn-outline btn-xs" onclick="bukaModalKategori(${idx})">Edit</button>
+          <button class="btn btn-danger-outline btn-xs" onclick="hapusKategori(${idx})">Hapus</button>
+        </td>
+      </tr>`).join('');
+}
+
+function bukaModalKategori(idx) {
+  kategoriEditIdx = typeof idx === 'number' ? idx : null;
+  const k = kategoriEditIdx === null ? null : kategoriData[kategoriEditIdx];
+  $('judulModalKategori').textContent = k ? 'Edit Kategori' : 'Tambah Kategori';
+  $('setNamaKategori').value = k ? k.nama : '';
+  $('setWarnaKategori').value = k ? toHex(k.warna) : '#ff762d';
+  pratinjauWarnaKategori();
+  $('modalKategori').classList.add('buka');
+  $('setNamaKategori').focus();
+}
+function tutupModalKategori() { $('modalKategori').classList.remove('buka'); kategoriEditIdx = null; }
+function pratinjauWarnaKategori() {
+  const w = $('setWarnaKategori').value;
+  $('pratinjauKategori').style.background = w;
+  $('pratinjauKategoriHex').textContent = w;
+}
+
+function simpanKategoriForm() {
+  const nama = $('setNamaKategori').value.trim();
+  const warna = $('setWarnaKategori').value;
+  if (!nama) { alert('Nama kategori wajib diisi.'); return; }
+  const bentrok = kategoriData.some((k, i) => k.nama.toLowerCase() === nama.toLowerCase() && i !== kategoriEditIdx);
+  if (bentrok) { alert('Kategori "' + nama + '" sudah ada.'); return; }
+
+  if (kategoriEditIdx === null) {
+    kategoriData.push({ nama, warna });
+  } else {
+    const lama = kategoriData[kategoriEditIdx].nama;
+    kategoriData[kategoriEditIdx] = { nama, warna };
+    if (lama !== nama) {
+      produk.forEach(p => { if (p.kategori === lama) p.kategori = nama; });
+      saveProduk();
+      if (kategoriAktif === lama) kategoriAktif = nama;
+    }
+  }
+  saveKategori();
+  tutupModalKategori();
+  refreshKategoriTerkait();
+}
+
+function hapusKategori(idx) {
+  const k = kategoriData[idx];
+  if (!k) return;
+  const jumlah = jumlahProdukKategori(k.nama);
+  const tujuan = kategoriData.filter((x, i) => i !== idx);
+  if (jumlah > 0 && tujuan.length === 0) {
+    alert('Kategori "' + k.nama + '" dipakai ' + jumlah + ' produk dan belum ada kategori lain.\nBuat kategori lain dulu sebagai tujuan pemindahan.');
+    return;
+  }
+  kategoriHapusIdx = idx;
+  $('infoHapusKategori').textContent = jumlah === 0
+    ? 'Hapus kategori "' + k.nama + '"? Kategori ini tidak dipakai produk manapun.'
+    : 'Kategori "' + k.nama + '" dipakai ' + jumlah + ' produk. Produk tersebut akan dipindahkan ke kategori yang dipilih.';
+  $('grupPindahKategori').style.display = jumlah === 0 ? 'none' : 'block';
+  $('setTujuanKategori').innerHTML = tujuan.map(x =>
+    '<option value="' + escHtml(x.nama) + '">' + escHtml(x.nama) + '</option>').join('');
+  $('modalHapusKategori').classList.add('buka');
+}
+function tutupHapusKategori() { $('modalHapusKategori').classList.remove('buka'); kategoriHapusIdx = null; }
+
+function konfirmasiHapusKategori() {
+  const idx = kategoriHapusIdx;
+  if (idx === null || !kategoriData[idx]) return;
+  const lama = kategoriData[idx].nama;
+  if (jumlahProdukKategori(lama) > 0) {
+    const tujuan = $('setTujuanKategori').value;
+    produk.forEach(p => { if (p.kategori === lama) p.kategori = tujuan; });
+    saveProduk();
+    if (kategoriAktif === lama) kategoriAktif = tujuan;
+  }
+  kategoriData.splice(idx, 1);
+  saveKategori();
+  tutupHapusKategori();
+  refreshKategoriTerkait();
+}
+
 /* ================= CRUD PRODUK ================= */
 function renderProdukAdmin() {
   const daftar = produk.filter(m => m.nama.toLowerCase().includes(kunciProdukAdmin));
@@ -1330,7 +1839,8 @@ function renderProdukAdmin() {
           <button class="btn btn-danger-outline btn-xs" onclick="hapusProduk(${m.id})">Hapus</button>
         </td>
       </tr>`).join('');
-  $('daftarKategori').innerHTML = [...new Set(produk.map(m => m.kategori))].map(k => '<option value="' + k + '">').join('');
+  $('daftarKategori').innerHTML = [...new Set([...kategoriData.map(k => k.nama), ...produk.map(m => m.kategori)])]
+    .map(k => '<option value="' + escHtml(k) + '">').join('');
 }
 function cariProdukAdmin(k) { kunciProdukAdmin = k.toLowerCase(); renderProdukAdmin(); }
 
@@ -1340,6 +1850,7 @@ function bukaModalProduk() {
   $('judulModalProduk').textContent = 'Tambah Produk';
   $('setNamaProduk').value = '';
   $('setHargaProduk').value = '';
+  $('setModalProduk').value = '';
   $('setKategoriProduk').value = '';
   $('setStokProduk').value = '100';
   $('setGambarProduk').value = '';
@@ -1356,6 +1867,7 @@ function editProduk(id) {
   $('judulModalProduk').textContent = 'Edit Produk';
   $('setNamaProduk').value = p.nama;
   $('setHargaProduk').value = p.harga;
+  $('setModalProduk').value = p.hargaModal || '';
   $('setKategoriProduk').value = p.kategori;
   $('setGambarProduk').value = '';
   $('grupStokAwal').style.display = 'none';
@@ -1368,8 +1880,9 @@ function hapusProduk(id) {
   if (!confirm('Hapus produk "' + p.nama + '"?')) return;
   produk = produk.filter(m => m.id !== id);
   keranjang = keranjang.filter(i => i.id !== id);
+  delete opnameDraft[id];
   saveProduk();
-  renderProdukAdmin(); renderStok(); renderPills(); renderMenu(); renderCart();
+  renderProdukAdmin(); renderStok(); renderPills(); renderMenu(); renderCart(); renderOpname(); renderKeuangan(); renderJurnal();
 }
 function pilihGambar(input) {
   const file = input.files && input.files[0];
@@ -1407,20 +1920,27 @@ function hapusGambarProduk() { pendingGambar = ''; $('setGambarProduk').value = 
 function simpanProduk() {
   const nama = $('setNamaProduk').value.trim();
   const harga = parseInt($('setHargaProduk').value);
+  const hargaModal = Math.max(0, parseInt($('setModalProduk').value) || 0);
   const kategori = $('setKategoriProduk').value.trim() || 'Lainnya';
   if (!nama) { alert('Nama produk wajib diisi.'); return; }
   if (!(harga > 0)) { alert('Harga harus lebih dari 0.'); return; }
+  if (hargaModal > harga && !confirm('Harga modal lebih besar dari harga jual. Lanjutkan menyimpan?')) return;
 
   if (produkEditId) {
     const p = produk.find(m => m.id === produkEditId);
-    Object.assign(p, { nama, harga, kategori, gambar: pendingGambar });
+    Object.assign(p, { nama, harga, hargaModal, kategori, gambar: pendingGambar });
   } else {
     const stok = Math.max(0, parseInt($('setStokProduk').value) || 0);
-    produk.push({ id: Date.now(), nama, harga, kategori, gambar: pendingGambar, stok });
+    produk.push({ id: Date.now(), nama, harga, hargaModal, kategori, gambar: pendingGambar, stok });
   }
   saveProduk();
+  if (!kategoriData.some(k => k.nama.toLowerCase() === kategori.toLowerCase())) {
+    kategoriData.push({ nama: kategori, warna: '' });
+    saveKategori();
+  }
   tutupModalProduk();
-  renderProdukAdmin(); renderStok(); renderPills(); renderMenu(); renderCart();
+  renderProdukAdmin(); renderKategori(); renderStok(); renderPills(); renderMenu(); renderCart();
+  renderOpname(); renderKeuangan(); renderJurnal();
 }
 
 /* ================= STOK PRODUK ================= */
@@ -1470,7 +1990,7 @@ function simpanStok() {
   saveProduk();
   saveLogStok();
   tutupModalStok();
-  renderStok(); renderLogStok(); renderProdukAdmin(); renderMenu(); renderCart();
+  renderStok(); renderLogStok(); renderProdukAdmin(); renderMenu(); renderCart(); renderOpname();
 }
 function renderLogStok() {
   $('stokLogBody').innerHTML = riwayatStok.length === 0
@@ -1644,7 +2164,677 @@ function cetakLaporan() {
         <tr><td><b>TOTAL</b></td><td><b>${L.trxSemua}</b></td><td><b>${L.itemSemua}</b></td><td class="kanan"><b>${formatRupiah(L.totalSemua)}</b></td></tr>
       </tbody>
     </table>`;
-  window.print();
+  cetakSekarang('laporan');
+}
+
+/* ================= UTIL PERIODE & EKSPOR ================= */
+function rentangPeriodeUmum(mode, tgl, bln, thn) {
+  const now = new Date();
+  if (mode === 'mingguan') {
+    const awal = awalMinggu(new Date((tgl || tanggalInput(now)) + 'T00:00:00'));
+    const akhir = new Date(awal);
+    akhir.setDate(akhir.getDate() + 6);
+    akhir.setHours(23, 59, 59);
+    return { awal, akhir };
+  }
+  if (mode === 'bulanan') {
+    const [y, m] = String(bln || bulanInput(now)).split('-').map(Number);
+    return { awal: new Date(y, m - 1, 1), akhir: new Date(y, m, 0, 23, 59, 59) };
+  }
+  if (mode === 'tahunan') {
+    const y = parseInt(thn) || now.getFullYear();
+    return { awal: new Date(y, 0, 1), akhir: new Date(y, 11, 31, 23, 59, 59) };
+  }
+  const awal = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return { awal, akhir: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59) };
+}
+function labelPeriode(p, mode) {
+  return fmtTanggalLaporan(p.awal) + (mode === 'realtime' ? ' (hari ini)' : ' &ndash; ' + fmtTanggalLaporan(p.akhir));
+}
+function labelPeriodeTeks(p, mode) {
+  return fmtTanggalLaporan(p.awal) + (mode === 'realtime' ? ' (hari ini)' : ' s/d ' + fmtTanggalLaporan(p.akhir));
+}
+function renderTabsPeriode(elId, mode, fnName) {
+  $(elId).innerHTML = Object.keys(PERIODE_LABEL).map(m =>
+    '<button class="pill ' + (m === mode ? 'active' : '') + '" onclick="' + fnName + '(\'' + m + '\')">' + PERIODE_LABEL[m] + '</button>').join('');
+}
+function kontrolPeriodeHtml(mode, tgl, bln, thn, prefix) {
+  if (mode === 'mingguan')
+    return '<label>Tanggal di minggu itu</label><input type="date" value="' + tgl + '" onchange="set' + prefix + 'Tgl(this.value)">' +
+      '<span class="akun-kode">Minggu dimulai hari Senin</span>';
+  if (mode === 'bulanan')
+    return '<label>Bulan</label><input type="month" value="' + bln + '" onchange="set' + prefix + 'Bln(this.value)">';
+  if (mode === 'tahunan')
+    return '<label>Tahun</label><input type="number" min="2020" max="2100" style="width:110px" value="' + thn + '" onchange="set' + prefix + 'Thn(this.value)">';
+  return '<span class="akun-kode">Menampilkan seluruh transaksi <b>hari ini</b>, diperbarui otomatis setiap ada pembayaran.</span>';
+}
+function namaBerkas(depan, mode) { return depan + '-' + mode + '-' + tanggalInput(new Date()); }
+
+function unduhBerkas(namaFile, mime, isi) {
+  const blob = new Blob([isi], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = namaFile;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 3000);
+}
+function xmlEsc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+}
+function namaSheetAman(n) { return (String(n).replace(/[\[\]:*?\/\\]/g, ' ').slice(0, 31)) || 'Sheet1'; }
+function unduhExcel(namaFile, sheets) {
+  const barisXml = (baris, idx) => '<Row>' + baris.map(s => {
+    const num = typeof s === 'number' && isFinite(s);
+    const gaya = num ? ' ss:StyleID="num"' : (idx === 0 ? ' ss:StyleID="hdr"' : '');
+    return '<Cell' + gaya + '><Data ss:Type="' + (num ? 'Number' : 'String') + '">' + (num ? s : xmlEsc(s)) + '</Data></Cell>';
+  }).join('') + '</Row>';
+  const isi = '<?xml version="1.0" encoding="UTF-8"?>\n<?mso-application progid="Excel.Sheet"?>\n' +
+    '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" ' +
+    'xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">' +
+    '<Styles>' +
+    '<Style ss:ID="hdr"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#FF762D" ss:Pattern="Solid"/></Style>' +
+    '<Style ss:ID="num"><Alignment ss:Horizontal="Right"/><NumberFormat ss:Format="#,##0"/></Style>' +
+    '</Styles>' +
+    sheets.map(s => '<Worksheet ss:Name="' + xmlEsc(namaSheetAman(s.nama)) + '"><Table>' + s.baris.map(barisXml).join('') + '</Table></Worksheet>').join('') +
+    '</Workbook>';
+  unduhBerkas(namaFile + '.xls', 'application/vnd.ms-excel;charset=utf-8', isi);
+}
+function tabelPrint(judul, kolom, baris, totalRow) {
+  const sel = (v, k) => '<td' + (k ? ' class="kanan"' : '') + '>' + v + '</td>';
+  const kepala = '<tr>' + kolom.map(c => '<th' + (c.k ? ' class="kanan"' : '') + '>' + c.l + '</th>').join('') + '</tr>';
+  const isi = baris.length
+    ? baris.map(b => '<tr>' + b.map((v, i) => sel(v, kolom[i] && kolom[i].k)).join('') + '</tr>').join('')
+    : '<tr><td colspan="' + kolom.length + '">Tidak ada data pada periode ini.</td></tr>';
+  const tot = totalRow ? '<tr class="total">' + totalRow.map((v, i) => sel(v, kolom[i] && kolom[i].k)).join('') + '</tr>' : '';
+  return (judul ? '<h3>' + judul + '</h3>' : '') + '<table><thead>' + kepala + '</thead><tbody>' + isi + tot + '</tbody></table>';
+}
+function cetakDok(judul, meta, isiHtml) {
+  $('laporanPrint').innerHTML =
+    '<h2>' + judul + '</h2>' +
+    '<div>' + escHtml(pengaturan.namaToko) + ' &middot; ' + meta + '</div>' +
+    '<div>Dicetak oleh: ' + escHtml(sesi.nama) + ' (' + sesi.role + ') &middot; ' + new Date().toLocaleString('id-ID') + '</div>' +
+    isiHtml;
+  cetakSekarang('laporan');
+}
+
+/* ================= LAPORAN KEUANGAN ================= */
+function setKeuMode(m) { keuMode = m; renderKeuangan(); }
+function setKeuTgl(v) { keuTgl = v; renderKeuangan(); }
+function setKeuBln(v) { keuBln = v; renderKeuangan(); }
+function setKeuThn(v) { keuThn = parseInt(v) || new Date().getFullYear(); renderKeuangan(); }
+
+function labaBaris(r) { return (r.bruto - r.diskon) - r.hpp; }
+function kontribusiBaris(r, total) { return total ? Math.round(r.netto / total * 1000) / 10 : 0; }
+
+function hitungKeuangan(mode, tgl, bln, thn) {
+  const periode = rentangPeriodeUmum(mode, tgl, bln, thn);
+  const daftar = riwayat.filter(t =>
+    statusOf(t) === 'lunas' && t.ts >= periode.awal.getTime() && t.ts <= periode.akhir.getTime());
+  const perItem = {}, perKat = {};
+  let subtotal = 0, diskonNom = 0, pajakTot = 0, totalTot = 0, qtyTot = 0, hppTot = 0;
+
+  daftar.forEach(t => {
+    const sub = t.subtotal || t.item.reduce((a, i) => a + i.harga * i.qty, 0);
+    const dn = Math.round(sub * (parseFloat(t.diskonPersen) || 0) / 100);
+    const pk = t.pajak || 0;
+    subtotal += sub; diskonNom += dn; pajakTot += pk; totalTot += t.total;
+    const dasar = sub || 1;
+    t.item.forEach(i => {
+      const bruto = i.harga * i.qty;
+      const disAlok = Math.round(dn * bruto / dasar);
+      const pajakAlok = Math.round(pk * bruto / dasar);
+      const prod = produk.find(m => m.id === i.produkId) || produk.find(m => m.nama === i.nama);
+      const modal = (prod && prod.hargaModal) || 0;
+      const kat = (prod && prod.kategori) || 'Lainnya';
+      qtyTot += i.qty;
+      hppTot += modal * i.qty;
+      if (!perItem[i.nama]) perItem[i.nama] = { nama: i.nama, kategori: kat, qty: 0, bruto: 0, diskon: 0, pajak: 0, netto: 0, hpp: 0 };
+      const it = perItem[i.nama];
+      it.kategori = kat; it.qty += i.qty; it.bruto += bruto; it.diskon += disAlok; it.pajak += pajakAlok;
+      it.netto += bruto - disAlok + pajakAlok; it.hpp += modal * i.qty;
+      if (!perKat[kat]) perKat[kat] = { kategori: kat, qty: 0, bruto: 0, diskon: 0, pajak: 0, netto: 0, hpp: 0, unik: {} };
+      const kk = perKat[kat];
+      kk.qty += i.qty; kk.bruto += bruto; kk.diskon += disAlok; kk.pajak += pajakAlok;
+      kk.netto += bruto - disAlok + pajakAlok; kk.hpp += modal * i.qty; kk.unik[i.nama] = 1;
+    });
+  });
+
+  const item = Object.values(perItem).sort((a, b) => b.netto - a.netto);
+  const kategori = Object.values(perKat).map(k => ({ ...k, jenis: Object.keys(k.unik).length })).sort((a, b) => b.netto - a.netto);
+  const pendapatan = subtotal - diskonNom;
+  return {
+    periode, jumlahTrx: daftar.length, subtotal, diskonNom, pajakTot, totalTot, qtyTot, hppTot,
+    pendapatan, labaKotor: pendapatan - hppTot, adaModal: hppTot > 0,
+    rata: daftar.length ? Math.round(totalTot / daftar.length) : 0,
+    item, kategori
+  };
+}
+
+function renderKeuangan() {
+  if (!sesi || sesi.role !== 'admin') return;
+  renderTabsPeriode('keuanganTabs', keuMode, 'setKeuMode');
+  $('keuanganKontrol').innerHTML = kontrolPeriodeHtml(keuMode, keuTgl, keuBln, keuThn, 'Keu');
+  const K = hitungKeuangan(keuMode, keuTgl, keuBln, keuThn);
+  $('keuanganPeriode').innerHTML = 'Periode: <b>' + labelPeriode(K.periode, keuMode) + '</b> &middot; <b>' +
+    K.jumlahTrx + '</b> transaksi &middot; dihitung pukul ' + new Date().toLocaleTimeString('id-ID');
+
+  $('keuanganStat').innerHTML = `
+    <div class="stat-card"><div class="label">Pendapatan (sebelum PPN)</div><div class="value">${formatRupiah(K.pendapatan)}</div><div class="sub">bruto ${formatRupiah(K.subtotal)} &minus; diskon ${formatRupiah(K.diskonNom)}</div></div>
+    <div class="stat-card"><div class="label">PPN Keluaran</div><div class="value">${formatRupiah(K.pajakTot)}</div><div class="sub">${pengaturan.ppn}% dari penjualan</div></div>
+    <div class="stat-card"><div class="label">Total Diterima</div><div class="value">${formatRupiah(K.totalTot)}</div><div class="sub">${K.jumlahTrx} transaksi &middot; rata-rata ${formatRupiah(K.rata)}</div></div>
+    <div class="stat-card"><div class="label">Laba Kotor</div><div class="value">${formatRupiah(K.labaKotor)}</div><div class="sub">${K.adaModal ? 'HPP ' + formatRupiah(K.hppTot) : 'isi harga modal produk'}</div></div>`;
+
+  $('keuanganItemNote').textContent = K.adaModal
+    ? 'Diskon & PPN dialokasikan proporsional ke tiap item'
+    : 'Isi Harga Modal di Data Produk untuk melihat HPP dan laba kotor';
+
+  const kolomItem = ['Produk', 'Kategori', 'Qty', 'Bruto', 'Diskon', 'PPN', 'Netto']
+    .concat(K.adaModal ? ['HPP', 'Laba Kotor'] : []).concat(['Kontribusi']);
+  const kepala = kolomItem.map((c, i) => '<th' + (i >= 2 ? ' class="kan"' : '') + '>' + c + '</th>').join('');
+  $('keuanganItemThead').innerHTML = '<tr>' + kepala + '</tr>';
+
+  const barisItem = K.item.map(r => {
+    const sel = [escHtml(r.nama), '<span class="badge badge-info">' + escHtml(r.kategori) + '</span>', r.qty,
+      formatAngka(r.bruto), formatAngka(r.diskon), formatAngka(r.pajak), '<b>' + formatAngka(r.netto) + '</b>'];
+    if (K.adaModal) sel.push(formatAngka(r.hpp), '<span class="' + (labaBaris(r) < 0 ? 'selisih-neg' : 'selisih-pos') + '">' + formatAngka(labaBaris(r)) + '</span>');
+    sel.push(kontribusiBaris(r, K.totalTot).toLocaleString('id-ID') + '%');
+    return '<tr>' + sel.map((v, i) => '<td' + (i >= 2 ? ' class="kan"' : '') + '>' + v + '</td>').join('') + '</tr>';
+  }).join('');
+  const totalItem = ['TOTAL', '', K.qtyTot, formatAngka(K.subtotal), formatAngka(K.diskonNom), formatAngka(K.pajakTot), formatAngka(K.totalTot)];
+  if (K.adaModal) totalItem.push(formatAngka(K.hppTot), formatAngka(K.labaKotor));
+  totalItem.push('100%');
+  $('keuanganItemBody').innerHTML = K.item.length === 0
+    ? '<tr><td colspan="' + kolomItem.length + '" style="text-align:center;color:var(--muted);padding:24px">Tidak ada transaksi pada periode ini.</td></tr>'
+    : barisItem + '<tr class="total-row">' + totalItem.map((v, i) => '<td' + (i >= 2 ? ' class="kan"' : '') + '>' + v + '</td>').join('') + '</tr>';
+
+  const kolomKat = ['Kategori', 'Jenis Produk', 'Qty', 'Bruto', 'Diskon', 'PPN', 'Netto']
+    .concat(K.adaModal ? ['HPP', 'Laba Kotor'] : []).concat(['Kontribusi']);
+  $('keuanganKategoriThead').innerHTML = '<tr>' + kolomKat.map((c, i) => '<th' + (i >= 1 ? ' class="kan"' : '') + '>' + c + '</th>').join('') + '</tr>';
+  const barisKat = K.kategori.map(r => {
+    const sel = ['<span class="swatch-tabel" style="background:' + warnaKategori(r.kategori) + '"></span> <b>' + escHtml(r.kategori) + '</b>',
+      r.jenis, r.qty, formatAngka(r.bruto), formatAngka(r.diskon), formatAngka(r.pajak), '<b>' + formatAngka(r.netto) + '</b>'];
+    if (K.adaModal) sel.push(formatAngka(r.hpp), '<span class="' + (labaBaris(r) < 0 ? 'selisih-neg' : 'selisih-pos') + '">' + formatAngka(labaBaris(r)) + '</span>');
+    sel.push(kontribusiBaris(r, K.totalTot).toLocaleString('id-ID') + '%');
+    return '<tr>' + sel.map((v, i) => '<td' + (i >= 1 ? ' class="kan"' : '') + '>' + v + '</td>').join('') + '</tr>';
+  }).join('');
+  const totalKat = ['TOTAL', K.item.length, K.qtyTot, formatAngka(K.subtotal), formatAngka(K.diskonNom), formatAngka(K.pajakTot), formatAngka(K.totalTot)];
+  if (K.adaModal) totalKat.push(formatAngka(K.hppTot), formatAngka(K.labaKotor));
+  totalKat.push('100%');
+  $('keuanganKategoriBody').innerHTML = K.kategori.length === 0
+    ? '<tr><td colspan="' + kolomKat.length + '" style="text-align:center;color:var(--muted);padding:24px">Tidak ada transaksi pada periode ini.</td></tr>'
+    : barisKat + '<tr class="total-row">' + totalKat.map((v, i) => '<td' + (i >= 1 ? ' class="kan"' : '') + '>' + v + '</td>').join('') + '</tr>';
+}
+
+function ringkasanKeuanganBaris(K) {
+  const baris = [
+    ['Keterangan', 'Nilai (Rp)'],
+    ['Periode', labelPeriodeTeks(K.periode, keuMode)],
+    ['Jenis periode', PERIODE_LABEL[keuMode]],
+    ['Dicetak pada', new Date().toLocaleString('id-ID')],
+    ['Dicetak oleh', sesi.nama + ' (' + sesi.role + ')'],
+    ['Jumlah transaksi', K.jumlahTrx],
+    ['Qty terjual', K.qtyTot],
+    ['Penjualan bruto (subtotal)', K.subtotal],
+    ['Diskon penjualan', -K.diskonNom],
+    ['Pendapatan sebelum PPN', K.pendapatan],
+    ['PPN keluaran', K.pajakTot],
+    ['Total diterima (termasuk PPN)', K.totalTot]
+  ];
+  if (K.adaModal) {
+    baris.push(['Beban pokok penjualan (HPP)', K.hppTot]);
+    baris.push(['Laba kotor', K.labaKotor]);
+  }
+  return baris;
+}
+function unduhExcelKeuangan() {
+  const K = hitungKeuangan(keuMode, keuTgl, keuBln, keuThn);
+  const kepalaItem = ['Produk', 'Kategori', 'Qty', 'Bruto', 'Diskon', 'PPN', 'Netto']
+    .concat(K.adaModal ? ['HPP', 'Laba Kotor'] : []).concat(['Kontribusi %']);
+  const barisItem = K.item.map(r => [r.nama, r.kategori, r.qty, r.bruto, r.diskon, r.pajak, r.netto]
+    .concat(K.adaModal ? [r.hpp, labaBaris(r)] : []).concat([kontribusiBaris(r, K.totalTot)]));
+  barisItem.push(['TOTAL', '', K.qtyTot, K.subtotal, K.diskonNom, K.pajakTot, K.totalTot]
+    .concat(K.adaModal ? [K.hppTot, K.labaKotor] : []).concat([100]));
+  const kepalaKat = ['Kategori', 'Jenis Produk', 'Qty', 'Bruto', 'Diskon', 'PPN', 'Netto']
+    .concat(K.adaModal ? ['HPP', 'Laba Kotor'] : []).concat(['Kontribusi %']);
+  const barisKat = K.kategori.map(r => [r.kategori, r.jenis, r.qty, r.bruto, r.diskon, r.pajak, r.netto]
+    .concat(K.adaModal ? [r.hpp, labaBaris(r)] : []).concat([kontribusiBaris(r, K.totalTot)]));
+  barisKat.push(['TOTAL', K.item.length, K.qtyTot, K.subtotal, K.diskonNom, K.pajakTot, K.totalTot]
+    .concat(K.adaModal ? [K.hppTot, K.labaKotor] : []).concat([100]));
+  unduhExcel(namaBerkas('laporan-keuangan', keuMode), [
+    { nama: 'Ringkasan', baris: ringkasanKeuanganBaris(K) },
+    { nama: 'Per Item', baris: [kepalaItem].concat(barisItem) },
+    { nama: 'Per Kategori', baris: [kepalaKat].concat(barisKat) }
+  ]);
+}
+function unduhPdfKeuangan() {
+  const K = hitungKeuangan(keuMode, keuTgl, keuBln, keuThn);
+  const kolomRingkas = [{ l: 'Keterangan' }, { l: 'Nilai', k: 1 }];
+  const barisRingkas = ringkasanKeuanganBaris(K).slice(1).map(b => [b[0], typeof b[1] === 'number' ? formatAngka(b[1]) : b[1]]);
+  const KOLOM_ITEM = ['Produk', 'Kategori', 'Qty', 'Bruto', 'Diskon', 'PPN', 'Netto'].concat(K.adaModal ? ['HPP', 'Laba Kotor'] : []).concat(['Kontribusi']);
+  const KOLOM_KAT = ['Kategori', 'Jenis Produk', 'Qty', 'Bruto', 'Diskon', 'PPN', 'Netto'].concat(K.adaModal ? ['HPP', 'Laba Kotor'] : []).concat(['Kontribusi']);
+  const barisItem = K.item.map(r => [escHtml(r.nama), escHtml(r.kategori), r.qty, formatAngka(r.bruto), formatAngka(r.diskon), formatAngka(r.pajak), formatAngka(r.netto)]
+    .concat(K.adaModal ? [formatAngka(r.hpp), formatAngka(labaBaris(r))] : []).concat([kontribusiBaris(r, K.totalTot) + '%']));
+  const totItem = ['TOTAL', '', K.qtyTot, formatAngka(K.subtotal), formatAngka(K.diskonNom), formatAngka(K.pajakTot), formatAngka(K.totalTot)]
+    .concat(K.adaModal ? [formatAngka(K.hppTot), formatAngka(K.labaKotor)] : []).concat(['100%']);
+  const barisKat = K.kategori.map(r => [escHtml(r.kategori), r.jenis, r.qty, formatAngka(r.bruto), formatAngka(r.diskon), formatAngka(r.pajak), formatAngka(r.netto)]
+    .concat(K.adaModal ? [formatAngka(r.hpp), formatAngka(labaBaris(r))] : []).concat([kontribusiBaris(r, K.totalTot) + '%']));
+  const totKat = ['TOTAL', K.item.length, K.qtyTot, formatAngka(K.subtotal), formatAngka(K.diskonNom), formatAngka(K.pajakTot), formatAngka(K.totalTot)]
+    .concat(K.adaModal ? [formatAngka(K.hppTot), formatAngka(K.labaKotor)] : []).concat(['100%']);
+
+  cetakDok('LAPORAN KEUANGAN ' + PERIODE_LABEL[keuMode].toUpperCase(),
+    'Periode: ' + labelPeriodeTeks(K.periode, keuMode),
+    tabelPrint('Ringkasan', kolomRingkas, barisRingkas) +
+    tabelPrint('Keuangan per Item Barang', KOLOM_ITEM.map((l, i) => ({ l, k: i >= 2 })), barisItem, totItem) +
+    tabelPrint('Keuangan per Kategori', KOLOM_KAT.map((l, i) => ({ l, k: i >= 1 })), barisKat, totKat) +
+    '<div class="ket">Nilai dalam Rupiah. Netto = bruto &minus; diskon + PPN. Diskon dan PPN dialokasikan proporsional ke tiap item. ' +
+    (K.adaModal ? 'Laba kotor = pendapatan sebelum PPN &minus; HPP.' : 'HPP/laba kotor tidak ditampilkan karena harga modal produk belum diisi.') + '</div>');
+}
+
+/* ================= STOCK OPNAME ================= */
+function nilaiSatuan(p) { return p ? ((p.hargaModal > 0 ? p.hargaModal : p.harga) || 0) : 0; }
+function fisikOpname(p) { return opnameDraft[p.id] !== undefined ? opnameDraft[p.id] : p.stok; }
+function rupiahBertanda(n) { return (n < 0 ? '-' : '') + formatRupiah(Math.abs(n)); }
+
+function ringkasanOpnameDraft() {
+  let diisi = 0, selisih = 0, minus = 0, plus = 0;
+  produk.forEach(p => {
+    if (opnameDraft[p.id] !== undefined) diisi++;
+    const s = fisikOpname(p) - p.stok;
+    if (s !== 0) {
+      selisih++;
+      const n = s * nilaiSatuan(p);
+      if (n < 0) minus += Math.abs(n); else plus += n;
+    }
+  });
+  return { diisi, selisih, minus, plus };
+}
+function renderOpnameRingkas() {
+  const r = ringkasanOpnameDraft();
+  $('opnameStat').innerHTML = `
+    <div class="stat-card"><div class="label">Produk Dihitung</div><div class="value">${r.diisi} / ${produk.length}</div><div class="sub">sudah diisi stok fisiknya</div></div>
+    <div class="stat-card"><div class="label">Produk Selisih</div><div class="value">${r.selisih}</div><div class="sub">stok fisik &ne; stok sistem</div></div>
+    <div class="stat-card"><div class="label">Nilai Selisih Kurang</div><div class="value selisih-neg">${formatRupiah(r.minus)}</div><div class="sub">stok hilang / rusak</div></div>
+    <div class="stat-card"><div class="label">Nilai Selisih Lebih</div><div class="value selisih-pos">${formatRupiah(r.plus)}</div><div class="sub">stok lebih dari catatan</div></div>`;
+}
+function perbaruiBarisOpname(id) {
+  const p = produk.find(m => m.id === id);
+  if (!p) return;
+  const tr = $('opnameBaris' + id);
+  if (!tr) return;
+  const sel = fisikOpname(p) - p.stok;
+  const nilai = sel * nilaiSatuan(p);
+  tr.cells[4].innerHTML = sel === 0
+    ? '<span class="badge badge-muted">Sesuai</span>'
+    : '<span class="badge ' + (sel < 0 ? 'badge-danger' : 'badge-success') + '">' + (sel > 0 ? '+' : '') + sel + '</span>';
+  tr.cells[5].innerHTML = '<span class="' + (nilai < 0 ? 'selisih-neg' : nilai > 0 ? 'selisih-pos' : '') + '">' + (nilai === 0 ? '-' : rupiahBertanda(nilai)) + '</span>';
+  tr.cells[3].firstElementChild.classList.toggle('ada-selisih', sel !== 0);
+}
+function renderOpname() {
+  if (!sesi || sesi.role !== 'admin') return;
+  renderOpnameRingkas();
+  $('btnOpnameSemua').className = 'btn btn-xs ' + (opnameFilter === 'semua' ? 'btn-primary' : 'btn-outline');
+  $('btnOpnameSelisih').className = 'btn btn-xs ' + (opnameFilter === 'selisih' ? 'btn-primary' : 'btn-outline');
+  const daftar = produk.filter(p =>
+    p.nama.toLowerCase().includes(opnameKunci) || String(p.kategori).toLowerCase().includes(opnameKunci));
+  const tampil = opnameFilter === 'selisih' ? daftar.filter(p => fisikOpname(p) !== p.stok) : daftar;
+  $('opnameBody').innerHTML = tampil.length === 0
+    ? '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">' +
+      (produk.length === 0 ? 'Belum ada produk.' : 'Tidak ada produk dengan selisih.') + '</td></tr>'
+    : tampil.map(p => {
+      const fisik = fisikOpname(p);
+      const sel = fisik - p.stok;
+      const nilai = sel * nilaiSatuan(p);
+      return '<tr id="opnameBaris' + p.id + '">' +
+        '<td style="font-weight:600">' + escHtml(p.nama) + '</td>' +
+        '<td><span class="badge badge-info">' + escHtml(p.kategori) + '</span></td>' +
+        '<td class="kan">' + p.stok + '</td>' +
+        '<td><input type="number" min="0" step="1" class="opname-input' + (sel !== 0 ? ' ada-selisih' : '') + '" value="' + fisik + '" ' +
+          'aria-label="Stok fisik ' + escHtml(p.nama) + '" title="Ketik hasil hitung fisik" ' +
+          'oninput="setStokFisik(' + p.id + ', this.value, true)" onchange="setStokFisik(' + p.id + ', this.value)"></td>' +
+        '<td class="kan">' + (sel === 0
+          ? '<span class="badge badge-muted">Sesuai</span>'
+          : '<span class="badge ' + (sel < 0 ? 'badge-danger' : 'badge-success') + '">' + (sel > 0 ? '+' : '') + sel + '</span>') + '</td>' +
+        '<td class="kan"><span class="' + (nilai < 0 ? 'selisih-neg' : nilai > 0 ? 'selisih-pos' : '') + '">' + (nilai === 0 ? '-' : rupiahBertanda(nilai)) + '</span></td>' +
+        '</tr>';
+    }).join('');
+  $('opnameFootInfo').innerHTML = tampil.length + ' dari ' + produk.length + ' produk ditampilkan &middot; ' +
+    ringkasanOpnameDraft().diisi + ' sudah diisi';
+  renderOpnameRiwayat();
+}
+function setStokFisik(id, nilaiStr, ringan) {
+  let v = parseInt(nilaiStr, 10);
+  if (isNaN(v) || v < 0) v = 0;
+  opnameDraft[id] = v;
+  if (ringan) { renderOpnameRingkas(); perbaruiBarisOpname(id); return; }
+  renderOpname();
+}
+function cariOpname(v) { opnameKunci = v.toLowerCase(); renderOpname(); }
+function setOpnameFilter(f) { opnameFilter = f; renderOpname(); }
+function isiSemuaFisik() {
+  produk.forEach(p => { if (opnameDraft[p.id] === undefined) opnameDraft[p.id] = p.stok; });
+  renderOpname();
+}
+function resetOpnameDraft() {
+  if (Object.keys(opnameDraft).length && !confirm('Hapus semua isian stok fisik yang belum disimpan?')) return;
+  opnameDraft = {};
+  renderOpname();
+}
+function nomorOpnameBaru() {
+  let maks = 0;
+  opnameData.forEach(o => { const n = parseInt(String(o.id).replace(/\D/g, ''), 10) || 0; if (n > maks) maks = n; });
+  return 'OP-' + String(maks + 1).padStart(4, '0');
+}
+function simpanOpname() {
+  const item = [];
+  produk.forEach(p => {
+    const fisik = fisikOpname(p);
+    if (fisik !== p.stok) {
+      const satuan = nilaiSatuan(p);
+      item.push({
+        produkId: p.id, nama: p.nama, kategori: p.kategori,
+        stokSistem: p.stok, stokFisik: fisik, selisih: fisik - p.stok,
+        nilaiSatuan: satuan, nilai: (fisik - p.stok) * satuan
+      });
+    }
+  });
+  if (item.length === 0) { alert('Tidak ada selisih stok. Isi kolom Stok Fisik sesuai hasil hitung terlebih dahulu.'); return; }
+  const id = nomorOpnameBaru();
+  const now = new Date();
+  const doc = {
+    id, ts: now.getTime(), waktu: now.toLocaleString('id-ID'), oleh: sesi.nama,
+    catatan: $('opnameCatatan').value.trim(),
+    jumlahProduk: produk.length, jumlahSelisih: item.length,
+    totalMinus: item.filter(i => i.nilai < 0).reduce((s, i) => s + Math.abs(i.nilai), 0),
+    totalPlus: item.filter(i => i.nilai > 0).reduce((s, i) => s + i.nilai, 0),
+    item
+  };
+  const ringkas = item.length + ' produk disesuaikan (' +
+    item.slice(0, 4).map(i => i.nama + ' ' + (i.selisih > 0 ? '+' : '') + i.selisih).join(', ') +
+    (item.length > 4 ? ', ...' : '') + ')';
+  if (!confirm('Simpan stock opname ' + id + '?\n\n' + ringkas + '\n\nStok sistem akan disamakan dengan hasil hitung fisik.')) return;
+
+  item.forEach(i => {
+    const p = produk.find(m => m.id === i.produkId);
+    if (!p) return;
+    p.stok = i.stokFisik;
+    riwayatStok.unshift({
+      ts: doc.ts, produkId: p.id, produkNama: p.nama, perubahan: i.selisih, stokAkhir: p.stok,
+      keterangan: 'Stock opname ' + id, oleh: sesi.nama
+    });
+  });
+  opnameData.unshift(doc);
+  saveOpname(); saveProduk(); saveLogStok();
+  opnameDraft = {};
+  $('opnameCatatan').value = '';
+  catatLog('Stock opname', id + ' &middot; ' + ringkas);
+  renderOpname(); renderStok(); renderLogStok(); renderProdukAdmin(); renderMenu(); renderCart();
+  renderKeuangan(); renderJurnal(); updateStat();
+  alert('Stock opname ' + id + ' tersimpan.\n' + item.length + ' produk disesuaikan dan jurnal penyesuaian persediaan dibuat.');
+}
+function renderOpnameRiwayat() {
+  $('opnameRiwayatBody').innerHTML = opnameData.length === 0
+    ? '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Belum ada opname yang disimpan.</td></tr>'
+    : opnameData.map((o, i) => `
+      <tr>
+        <td class="trx-id" onclick="lihatOpname(${i})">${o.id}</td>
+        <td style="white-space:nowrap">${o.waktu}</td>
+        <td>${escHtml(o.oleh || '-')}</td>
+        <td class="kan">${o.jumlahSelisih}</td>
+        <td class="kan selisih-neg">${o.totalMinus ? '- ' + formatAngka(o.totalMinus) : '-'}</td>
+        <td class="kan selisih-pos">${o.totalPlus ? '+ ' + formatAngka(o.totalPlus) : '-'}</td>
+        <td>${escHtml(o.catatan || '-')}</td>
+        <td style="text-align:right;white-space:nowrap">
+          <button class="btn btn-outline btn-xs" onclick="lihatOpname(${i})">Detail</button>
+          <button class="btn btn-outline btn-xs" onclick="unduhPdfOpname(${i})">PDF</button>
+          <button class="btn btn-outline btn-xs" onclick="unduhExcelOpname(${i})">Excel</button>
+          <button class="btn btn-danger-outline btn-xs" onclick="hapusOpname(${i})">Hapus</button>
+        </td>
+      </tr>`).join('');
+}
+function tabelOpnameHtml(o) {
+  return '<div style="overflow-x:auto"><table><thead><tr>' +
+    '<th>Produk</th><th>Kategori</th><th class="kan">Stok Sistem</th><th class="kan">Stok Fisik</th><th class="kan">Selisih</th><th class="kan">Nilai</th></tr></thead><tbody>' +
+    o.item.map(i => '<tr><td>' + escHtml(i.nama) + '</td><td>' + escHtml(i.kategori || '-') + '</td>' +
+      '<td class="kan">' + i.stokSistem + '</td><td class="kan">' + i.stokFisik + '</td>' +
+      '<td class="kan ' + (i.selisih < 0 ? 'selisih-neg' : 'selisih-pos') + '">' + (i.selisih > 0 ? '+' : '') + i.selisih + '</td>' +
+      '<td class="kan ' + (i.nilai < 0 ? 'selisih-neg' : 'selisih-pos') + '">' + (i.nilai === 0 ? '-' : rupiahBertanda(i.nilai)) + '</td></tr>').join('') +
+    '<tr class="total-row"><td colspan="4">TOTAL SELISIH</td>' +
+    '<td class="kan">' + o.item.reduce((s, i) => s + i.selisih, 0) + '</td>' +
+    '<td class="kan">' + rupiahBertanda(o.totalPlus - o.totalMinus) + '</td></tr>' +
+    '</tbody></table></div>';
+}
+function lihatOpname(idx) {
+  const o = opnameData[idx];
+  if (!o) return;
+  $('judulModalOpname').textContent = 'Detail Opname ' + o.id;
+  $('isiModalOpname').innerHTML =
+    '<div class="form-info">' + o.waktu + ' &middot; oleh <b>' + escHtml(o.oleh || '-') + '</b>' +
+    (o.catatan ? ' &middot; catatan: <b>' + escHtml(o.catatan) + '</b>' : '') +
+    ' &middot; ' + o.jumlahSelisih + ' dari ' + o.jumlahProduk + ' produk berselisih</div>' +
+    tabelOpnameHtml(o) +
+    '<div class="sub-note">Selisih kurang: <b class="selisih-neg">' + formatRupiah(o.totalMinus) +
+    '</b> &middot; Selisih lebih: <b class="selisih-pos">' + formatRupiah(o.totalPlus) + '</b></div>';
+  $('modalOpname').classList.add('buka');
+}
+function tutupModalOpname() { $('modalOpname').classList.remove('buka'); }
+function hapusOpname(idx) {
+  const o = opnameData[idx];
+  if (!o) return;
+  if (!confirm('Hapus dokumen opname ' + o.id + '?\nStok yang sudah disesuaikan TIDAK dikembalikan.')) return;
+  opnameData.splice(idx, 1);
+  saveOpname();
+  renderOpnameRiwayat();
+  renderJurnal();
+}
+function unduhExcelOpname(idx) {
+  const o = opnameData[idx];
+  if (!o) return;
+  unduhExcel('stock-opname-' + o.id, [
+    {
+      nama: 'Ringkasan', baris: [
+        ['Keterangan', 'Nilai'],
+        ['No. Opname', o.id],
+        ['Waktu', o.waktu],
+        ['Oleh', o.oleh || '-'],
+        ['Catatan', o.catatan || '-'],
+        ['Jumlah produk dihitung', o.jumlahProduk],
+        ['Produk dengan selisih', o.jumlahSelisih],
+        ['Nilai selisih kurang', -o.totalMinus],
+        ['Nilai selisih lebih', o.totalPlus],
+        ['Nilai selisih bersih', o.totalPlus - o.totalMinus]
+      ]
+    },
+    {
+      nama: 'Hasil Hitung', baris: [['Produk', 'Kategori', 'Stok Sistem', 'Stok Fisik', 'Selisih', 'Nilai']]
+        .concat(o.item.map(i => [i.nama, i.kategori || '-', i.stokSistem, i.stokFisik, i.selisih, i.nilai]))
+        .concat([['TOTAL', '', '', '', o.item.reduce((s, i) => s + i.selisih, 0), o.totalPlus - o.totalMinus]])
+    }
+  ]);
+}
+function unduhPdfOpname(idx) {
+  const o = opnameData[idx];
+  if (!o) return;
+  cetakDok('BERITA ACARA STOCK OPNAME ' + o.id,
+    'Waktu: ' + o.waktu + ' &middot; Oleh: ' + escHtml(o.oleh || '-'),
+    tabelPrint(null,
+      [{ l: 'Produk' }, { l: 'Kategori' }, { l: 'Stok Sistem', k: 1 }, { l: 'Stok Fisik', k: 1 }, { l: 'Selisih', k: 1 }, { l: 'Nilai (Rp)', k: 1 }],
+      o.item.map(i => [escHtml(i.nama), escHtml(i.kategori || '-'), i.stokSistem, i.stokFisik, (i.selisih > 0 ? '+' : '') + i.selisih, i.nilai === 0 ? '-' : formatAngka(i.nilai)]),
+      ['TOTAL', '', '', '', o.item.reduce((s, i) => s + i.selisih, 0), formatAngka(o.totalPlus - o.totalMinus)]) +
+    '<div class="ket">Produk dihitung: ' + o.jumlahProduk + ' &middot; Produk berselisih: ' + o.jumlahSelisih +
+    ' &middot; Selisih kurang: ' + formatAngka(o.totalMinus) + ' &middot; Selisih lebih: ' + formatAngka(o.totalPlus) +
+    (o.catatan ? '<br>Catatan: ' + escHtml(o.catatan) : '') + '</div>');
+}
+
+/* ================= JURNAL AKUNTANSI ================= */
+function setJurMode(m) { jurMode = m; renderJurnal(); }
+function setJurTgl(v) { jurTgl = v; renderJurnal(); }
+function setJurBln(v) { jurBln = v; renderJurnal(); }
+function setJurThn(v) { jurThn = parseInt(v) || new Date().getFullYear(); renderJurnal(); }
+function cariJurnal(v) { kunciJurnal = v.toLowerCase(); renderJurnal(); }
+function namaAkun(k) { return AKUN[k].kode + ' &middot; ' + AKUN[k].nama; }
+function namaAkunTeks(k) { return AKUN[k].kode + ' - ' + AKUN[k].nama; }
+
+function bangunJurnal(awal, akhir) {
+  const a = awal.getTime(), b = akhir.getTime();
+  const entri = [];
+  riwayat.filter(t => statusOf(t) === 'lunas' && t.ts >= a && t.ts <= b).forEach(t => {
+    const sub = t.subtotal || t.item.reduce((s, i) => s + i.harga * i.qty, 0);
+    const dn = Math.round(sub * (parseFloat(t.diskonPersen) || 0) / 100);
+    const pk = t.pajak || 0;
+    const garis = [{ akun: 'kas', d: t.total, k: 0 }];
+    if (dn > 0) garis.push({ akun: 'diskon', d: dn, k: 0 });
+    garis.push({ akun: 'pendapatan', d: 0, k: sub });
+    if (pk > 0) garis.push({ akun: 'ppn', d: 0, k: pk });
+    entri.push({
+      ts: t.ts, noBukti: t.trxId,
+      ket: 'Penjualan ' + (t.metode || 'tunai') + ' oleh ' + (t.kasir || '-'),
+      garis
+    });
+    const hpp = t.item.reduce((s, i) => {
+      const p = produk.find(m => m.id === i.produkId) || produk.find(m => m.nama === i.nama);
+      return s + ((p && p.hargaModal) || 0) * i.qty;
+    }, 0);
+    if (hpp > 0) {
+      entri.push({
+        ts: t.ts, noBukti: t.trxId + '/HPP',
+        ket: 'Beban pokok penjualan ' + t.trxId,
+        garis: [{ akun: 'hpp', d: hpp, k: 0 }, { akun: 'persediaan', d: 0, k: hpp }]
+      });
+    }
+  });
+  opnameData.filter(o => o.ts >= a && o.ts <= b).forEach(o => {
+    const garis = [];
+    if (o.totalMinus > 0) {
+      garis.push({ akun: 'rugiStok', d: o.totalMinus, k: 0 });
+      garis.push({ akun: 'persediaan', d: 0, k: o.totalMinus });
+    }
+    if (o.totalPlus > 0) {
+      garis.push({ akun: 'persediaan', d: o.totalPlus, k: 0 });
+      garis.push({ akun: 'untungStok', d: 0, k: o.totalPlus });
+    }
+    if (garis.length) {
+      entri.push({
+        ts: o.ts, noBukti: o.id,
+        ket: 'Penyesuaian persediaan - stock opname oleh ' + (o.oleh || '-') + (o.catatan ? ' (' + o.catatan + ')' : ''),
+        garis
+      });
+    }
+  });
+  entri.sort((x, y) => x.ts - y.ts);
+  return entri;
+}
+function saringJurnal(entri) {
+  if (!kunciJurnal) return entri;
+  return entri.filter(e => (e.noBukti + ' ' + e.ket + ' ' + e.garis.map(g => namaAkunTeks(g.akun)).join(' '))
+    .toLowerCase().includes(kunciJurnal));
+}
+function totalSisi(entri, sisi) {
+  return entri.reduce((s, e) => s + e.garis.reduce((a, g) => a + (sisi === 'd' ? g.d : g.k), 0), 0);
+}
+function neracaSaldo(entri) {
+  const map = {};
+  entri.forEach(e => e.garis.forEach(g => {
+    if (!map[g.akun]) map[g.akun] = { d: 0, k: 0 };
+    map[g.akun].d += g.d;
+    map[g.akun].k += g.k;
+  }));
+  return Object.keys(AKUN).filter(k => map[k]).map(k => ({
+    kode: AKUN[k].kode, nama: AKUN[k].nama, d: map[k].d, k: map[k].k
+  }));
+}
+function jurnalPeriodeAktif() {
+  const p = rentangPeriodeUmum(jurMode, jurTgl, jurBln, jurThn);
+  return { periode: p, semua: bangunJurnal(p.awal, p.akhir) };
+}
+function renderJurnal() {
+  if (!sesi || sesi.role !== 'admin') return;
+  renderTabsPeriode('jurnalTabs', jurMode, 'setJurMode');
+  $('jurnalKontrol').innerHTML = kontrolPeriodeHtml(jurMode, jurTgl, jurBln, jurThn, 'Jur');
+  const { periode, semua } = jurnalPeriodeAktif();
+  const entri = saringJurnal(semua);
+  $('jurnalPeriode').innerHTML = 'Periode: <b>' + labelPeriode(periode, jurMode) + '</b> &middot; <b>' +
+    semua.length + '</b> entri jurnal' + (kunciJurnal ? ' &middot; disaring: <b>' + escHtml(kunciJurnal) + '</b>' : '');
+
+  const totalD = totalSisi(entri, 'd');
+  const totalK = totalSisi(entri, 'k');
+  const seimbang = Math.abs(totalD - totalK) < 1;
+  $('jurnalBody').innerHTML = entri.length === 0
+    ? '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Tidak ada jurnal pada periode ini.</td></tr>'
+    : entri.map(e => {
+      const n = e.garis.length;
+      const d = new Date(e.ts);
+      return e.garis.map((g, i) =>
+        '<tr' + (i > 0 ? ' class="baris-akun-sub"' : '') + '>' +
+        (i === 0
+          ? '<td rowspan="' + n + '" style="white-space:nowrap">' + d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) +
+            '<div class="akun-kode">' + d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + '</div></td>' +
+            '<td rowspan="' + n + '" class="trx-id" style="white-space:nowrap">' + escHtml(e.noBukti) + '</td>' +
+            '<td rowspan="' + n + '" style="max-width:280px">' + escHtml(e.ket) + '</td>'
+          : '') +
+        '<td>' + namaAkun(g.akun) + '</td>' +
+        '<td class="kan">' + (g.d ? formatAngka(g.d) : '') + '</td>' +
+        '<td class="kan">' + (g.k ? formatAngka(g.k) : '') + '</td></tr>').join('');
+    }).join('');
+  $('jurnalFootInfo').innerHTML = entri.length + ' entri &middot; ' + entri.reduce((s, e) => s + e.garis.length, 0) + ' baris akun';
+  $('jurnalBalance').innerHTML = 'Total Debet <b>' + formatRupiah(totalD) + '</b> &middot; Total Kredit <b>' + formatRupiah(totalK) +
+    '</b> &nbsp;<span class="badge ' + (seimbang ? 'badge-success' : 'badge-danger') + '">' + (seimbang ? 'Seimbang' : 'Tidak Seimbang') + '</span>';
+
+  const neraca = neracaSaldo(entri);
+  $('neracaBody').innerHTML = neraca.length === 0
+    ? '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px">Belum ada saldo akun pada periode ini.</td></tr>'
+    : neraca.map(n => '<tr><td class="akun-kode">' + n.kode + '</td><td>' + n.nama + '</td>' +
+      '<td class="kan">' + (n.d ? formatAngka(n.d) : '') + '</td><td class="kan">' + (n.k ? formatAngka(n.k) : '') + '</td></tr>').join('') +
+      '<tr class="total-row"><td colspan="2">TOTAL</td><td class="kan">' + formatAngka(totalD) + '</td><td class="kan">' + formatAngka(totalK) + '</td></tr>';
+}
+function barisExcelJurnal(entri) {
+  const baris = [['Tanggal', 'No. Bukti', 'Keterangan', 'Akun', 'Debet', 'Kredit']];
+  entri.forEach(e => e.garis.forEach(g => baris.push([
+    new Date(e.ts).toLocaleString('id-ID'), e.noBukti, e.ket, namaAkunTeks(g.akun), g.d, g.k
+  ])));
+  baris.push(['TOTAL', '', '', '', totalSisi(entri, 'd'), totalSisi(entri, 'k')]);
+  return baris;
+}
+function barisExcelNeraca(entri) {
+  const baris = [['Kode', 'Nama Akun', 'Debet', 'Kredit']];
+  neracaSaldo(entri).forEach(n => baris.push([n.kode, n.nama, n.d, n.k]));
+  baris.push(['', 'TOTAL', totalSisi(entri, 'd'), totalSisi(entri, 'k')]);
+  return baris;
+}
+function unduhExcelJurnal() {
+  const entri = saringJurnal(jurnalPeriodeAktif().semua);
+  unduhExcel(namaBerkas('jurnal-akuntansi', jurMode), [
+    { nama: 'Jurnal Umum', baris: barisExcelJurnal(entri) },
+    { nama: 'Neraca Saldo', baris: barisExcelNeraca(entri) }
+  ]);
+}
+function unduhPdfJurnal() {
+  const { periode, semua } = jurnalPeriodeAktif();
+  const entri = saringJurnal(semua);
+  const barisJurnal = [];
+  entri.forEach(e => e.garis.forEach((g, i) => barisJurnal.push([
+    i === 0 ? new Date(e.ts).toLocaleDateString('id-ID') : '',
+    i === 0 ? escHtml(e.noBukti) : '',
+    i === 0 ? escHtml(e.ket) : '',
+    (g.k ? '&nbsp;&nbsp;&nbsp;&nbsp;' : '') + namaAkunTeks(g.akun),
+    g.d ? formatAngka(g.d) : '',
+    g.k ? formatAngka(g.k) : ''
+  ])));
+  const neraca = neracaSaldo(entri);
+  cetakDok('JURNAL AKUNTANSI ' + PERIODE_LABEL[jurMode].toUpperCase(),
+    'Periode: ' + labelPeriodeTeks(periode, jurMode),
+    tabelPrint('Jurnal Umum',
+      [{ l: 'Tanggal' }, { l: 'No. Bukti' }, { l: 'Keterangan' }, { l: 'Akun' }, { l: 'Debet', k: 1 }, { l: 'Kredit', k: 1 }],
+      barisJurnal,
+      ['TOTAL', '', '', '', formatAngka(totalSisi(entri, 'd')), formatAngka(totalSisi(entri, 'k'))]) +
+    tabelPrint('Neraca Saldo',
+      [{ l: 'Kode' }, { l: 'Nama Akun' }, { l: 'Debet', k: 1 }, { l: 'Kredit', k: 1 }],
+      neraca.map(n => [n.kode, escHtml(n.nama), n.d ? formatAngka(n.d) : '', n.k ? formatAngka(n.k) : '']),
+      ['', 'TOTAL', formatAngka(totalSisi(entri, 'd')), formatAngka(totalSisi(entri, 'k'))]) +
+    '<div class="ket">Jurnal dibuat otomatis dengan sistem double entry dari transaksi penjualan dan hasil stock opname. ' +
+    'Total debet harus sama dengan total kredit.</div>');
 }
 
 /* ================= RIWAYAT ================= */
@@ -1881,7 +3071,7 @@ function simpanProfil() {
 
 /* ================= INIT ================= */
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { tutupPengaturan(); tutupModalProduk(); tutupModalStok(); tutupModalPengguna(); tutupProfil(); tutupSidebar(); }
+  if (e.key === 'Escape') { tutupPengaturan(); tutupModalProduk(); tutupModalStok(); tutupModalPengguna(); tutupProfil(); tutupModalKategori(); tutupHapusKategori(); tutupModalOpname(); tutupSidebar(); }
 });
 
 if (sesi) {
